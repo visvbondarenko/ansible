@@ -1,0 +1,9 @@
+---
+VAULT_ADDR: "{{ lookup('consul_kv', 'aws/vpc/{{ ec2_tag_Owner }}/global/vault') }}"
+ECR_URI:    "{{ lookup('consul_kv', 'aws/vpc/{{ ec2_tag_Owner }}/global/ecr_uri') }}"
+BASE_PATH:  "{{ ec2_tag_Owner }}/{{ ec2_tag_Environment }}/{{ ec2_tag_Platform }}"
+
+CONTAINER_NAME: 'jenkins-job-builder'
+JJB_USER:    "{{ lookup('hashi_vault', 'secret=secret/{{ BASE_PATH }}/{{ ec2_tag_Type }}/application/{{ ec2_tag_Subtype }}/jjb_user:value token={{ VAULT_TOKEN }} url={{ VAULT_ADDR }}') }}"
+JJB_TOKEN:   "{{ lookup('hashi_vault', 'secret=secret/{{ BASE_PATH }}/{{ ec2_tag_Type }}/application/{{ ec2_tag_Subtype }}/jjb_token:value token={{ VAULT_TOKEN }} url={{ VAULT_ADDR }}') }}"
+JENKINS_URL: "{{ lookup('consul_kv',   'aws/vpc/{{ BASE_PATH }}/{{ ec2_tag_Type }}/application/{{ ec2_tag_Subtype }}/jenkins_url') }}"

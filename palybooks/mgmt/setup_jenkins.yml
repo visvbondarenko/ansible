@@ -1,0 +1,7 @@
+---
+- hosts: tag_Type_automation:&tag_Subtype_jenkins
+  gather_facts: no
+
+  roles:
+    - mgmt/setup_jenkins
+#    - mgmt/setup_jenkins_nginx

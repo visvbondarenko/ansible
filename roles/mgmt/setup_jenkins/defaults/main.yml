@@ -1,0 +1,9 @@
+---
+VAULT_ADDR: "{{ lookup('consul_kv', 'aws/vpc/{{ ec2_tag_Owner }}/global/vault') }}"
+
+FIPA: "{{ lookup('consul_kv', 'aws/vpc/{{ ec2_tag_Owner }}/global/freeipa_server') }}"
+FIPA_ADMIN_USERNAME: "{{ lookup( 'hashi_vault', 'secret=secret/{{ ec2_tag_Owner }}/global/freeipa/admin_username:value token={{ VAULT_TOKEN }} url={{ VAULT_ADDR }}' ) }}"
+FIPA_ADMIN_PASSWORD: "{{ lookup( 'hashi_vault', 'secret=secret/{{ ec2_tag_Owner }}/global/freeipa/admin_password:value token={{ VAULT_TOKEN }} url={{ VAULT_ADDR }}' ) }}"
+
+SERVICE_NAME: "jenkins"
+HOME: "/home/jenkins"

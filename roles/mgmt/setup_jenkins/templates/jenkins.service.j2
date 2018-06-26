@@ -1,0 +1,16 @@
+[Unit]
+Description={{ SERVICE_NAME }}
+Requires=docker.service
+
+[Service]
+Restart=always
+WorkingDirectory=/etc/systemd/compose_yml
+ExecStartPre=-/usr/bin/docker-compose -f {{ SERVICE_NAME }}.yml stop -t 30
+ExecStartPre=-/usr/bin/docker-compose -f {{ SERVICE_NAME }}.yml rm -f
+ExecStartPre=-/usr/bin/docker pull jenkins/jenkins:alpine
+ExecStart=/bin/docker-compose -f {{ SERVICE_NAME }}.yml up
+ExecStop=/bin/docker-compose -f {{ SERVICE_NAME }}.yml stop -t 30
+StandardOutput=null
+
+[Install]
+WantedBy=multi-user.target

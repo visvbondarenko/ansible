@@ -1,0 +1,7 @@
+- name: Restart Jenkins
+  become: yes
+  service:
+    daemon_reload: yes
+    enabled: yes
+    name: "{{ SERVICE_NAME }}"
+    state: restarted

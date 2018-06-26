@@ -1,0 +1,69 @@
+---
+- name: Install docker-compose
+  become: yes
+  yum:
+    name: docker-compose
+    state: latest
+
+- name: Create homedir
+  become: yes
+  file:
+    path: "{{ item }}"
+    owner: centos
+    group: centos
+    mode: 0755
+    state: directory
+  loop:
+    - "{{ HOME }}"
+    - "/etc/systemd/compose_yml"
+
+- name: Check if java-certificate already imported
+  become: yes
+  shell: keytool -list -keystore {{ HOME }}/java_ca_certs -storepass changeit -noprompt -alias {{ DOMAIN }}
+  ignore_errors: true
+  register: java_cert_imported
+
+
+- name: Download ca certificate
+  become: yes
+  get_url:
+    url: http://{{ FIPA }}/ipa/config/ca.crt
+    dest: "{{ HOME }}/ca.crt"
+    mode: 0440
+  when: java_cert_imported|failed
+
+- name: Import fipa certificate to Java
+  become: yes
+  shell: keytool -storepass changeit -import -trustcacerts -keystore {{ HOME }}/java_ca_certs -noprompt -alias {{ DOMAIN }} -file {{ HOME }}/ca.crt
+  when: java_cert_imported|failed
+  notify: Restart Jenkins
+
+#- name: Import SSL certificate from FIPA for Java
+#  become: yes
+#  java_cert:
+#    cert_url: "{{ FIPA }}/ipa/config/ca.crt"
+#    cert_alias: "{{ FIPA }}"
+#    keystore_path: "{{ HOME }}/java_ca_certs"
+#    keystore_pass: changeit
+#    keystore_create: yes
+#    state: present
+#  notify: Restart Jenkins
+
+- name: Add jenkins.service jenkins.yml
+  become: yes
+  template:
+    src: "{{ item.template }}.j2"
+    dest: "/etc/systemd/{{ item.dest }}"
+    owner: jenkins
+  loop:
+    - { template: "{{ SERVICE_NAME }}.yml", dest: "compose_yml/{{ SERVICE_NAME }}.yml" }
+    - { template: "{{ SERVICE_NAME }}.service",  dest: "system/{{ SERVICE_NAME }}.service" }
+  notify: Restart Jenkins
+
+- name: Jenkins running
+  become: yes
+  service:
+    daemon_reload: yes
+    enabled: yes
+    name: "{{ SERVICE_NAME }}"
+    state: started

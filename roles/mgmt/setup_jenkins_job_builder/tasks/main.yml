@@ -1,0 +1,32 @@
+---
+- name: Ensure project container absent
+  become: yes
+  docker_container:
+    name: "{{ CONTAINER_NAME }}"
+    keep_volumes: false
+    state: absent
+
+- name: Create necessary directories
+  become: yes
+  file:
+    name: "/srv/{{ CONTAINER_NAME }}"
+    state: directory
+    owner: jenkins
+
+- name: Create config file
+  become: yes
+  template:
+    src: "jenkins_jobs.ini.j2"
+    dest: "/srv/{{ CONTAINER_NAME }}/jenkins_jobs.ini"
+    owner: jenkins
+
+- name: Launch project container
+  become: yes
+  docker_container:
+    name: "{{ CONTAINER_NAME }}"
+    image: "{{ ECR_URI }}/{{ CONTAINER_NAME }}:latest"
+    pull: true
+    restart_policy: always
+    volumes:
+      - "/srv/{{ CONTAINER_NAME }}:/etc/jenkins_jobs"
+    command: sh -c 'while :; do sleep 2073600; done'

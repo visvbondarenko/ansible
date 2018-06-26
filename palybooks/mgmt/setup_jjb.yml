@@ -1,0 +1,7 @@
+---
+- hosts: tag_Type_automation:&tag_Subtype_ansible
+  gather_facts: no
+
+  roles:
+#    - ecr_login
+    - setup_jjb
