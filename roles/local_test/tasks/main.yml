@@ -1,3 +1,6 @@
 ---
 - name: list directory
   command: "{{ COMMAND }} /home"
+  register: list_output
+
+- debug: msg="{{ list_output }}"
